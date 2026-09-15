@@ -1,0 +1,37 @@
+# Blender autosave / backup files
+*.blend1
+*.blend2
+*.blend3
+*.blend@
+*.blend.autosave
+
+# Temporary render / cache folders
+__pycache__/
+*.pyc
+.cache/
+cache/
+tmp/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / editor
+.vscode/
+.idea/
+
+# Node / future web viewer
+node_modules/
+.next/
+dist/
+build/
+.env
+.env.*
+
+# Large local render intermediates
+renders_working/
+sim_cache/
+
+# Keep final exports only in exports/ when deliberately committed
