@@ -34,13 +34,15 @@ jobs:
           curl -L --fail --retry 3 \
             'https://mirror.blender.org/release/Blender5.2/blender-5.2.2-linux-x64.tar.xz' \
             -o blender.tar.xz
-          mkdir blender
+          rm -rf blender
+          mkdir -p blender
           tar -xJf blender.tar.xz -C blender --strip-components=1
           ./blender/blender --version
 
       - name: Export GLB
         run: |
           set -euxo pipefail
+          rm -rf exported
           mkdir -p exported
           ./blender/blender -b AQP_WHR_Config3_V1.blend \
             --python tools/export_aqp.py -- "$PWD/exported"
