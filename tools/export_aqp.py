@@ -1,3 +1,4 @@
+# AQP WHR Configuration 3 web-export staging script.
 import bpy
 import json
 import math
@@ -22,12 +23,10 @@ meta_path = os.path.join(out_dir, "scene_meta.json")
 scene = bpy.context.scene
 view_layer = bpy.context.view_layer
 
-# Capture scene/object statistics before conversion.
 object_counts = {}
 for obj in scene.objects:
     object_counts[obj.type] = object_counts.get(obj.type, 0) + 1
 
-# Convert web-unsupported geometric object types to meshes in this temporary export copy.
 converted = []
 failed_conversions = []
 for obj in list(scene.objects):
@@ -36,7 +35,6 @@ for obj in list(scene.objects):
     try:
         if obj.name not in view_layer.objects:
             continue
-        # Keep intentionally hidden objects hidden; only prepare visible ones for export.
         if not obj.visible_get(view_layer=view_layer):
             continue
         bpy.ops.object.select_all(action="DESELECT")
@@ -50,7 +48,6 @@ for obj in list(scene.objects):
     except Exception as exc:
         failed_conversions.append({"name": obj.name, "type": obj.type, "error": repr(exc)})
 
-# Calculate world-space bounds for visible mesh objects after conversion.
 mins = Vector((math.inf, math.inf, math.inf))
 maxs = Vector((-math.inf, -math.inf, -math.inf))
 visible_meshes = 0
@@ -84,8 +81,6 @@ if visible_meshes and all(math.isfinite(v) for v in (*mins, *maxs)):
         "radius": float(size.length * 0.5),
     }
 
-# Read the saved 3D viewport state when available. This helps the web viewer start
-# from a view close to the one stored in the .blend file.
 viewport = None
 try:
     for screen in bpy.data.screens:
@@ -133,7 +128,6 @@ with open(meta_path, "w", encoding="utf-8") as fh:
 
 print("AQP_EXPORT_META", json.dumps(metadata, ensure_ascii=False))
 
-# Export an uncompressed GLB first for maximum browser compatibility and fidelity.
 result = bpy.ops.export_scene.gltf(
     filepath=glb_path,
     check_existing=False,
