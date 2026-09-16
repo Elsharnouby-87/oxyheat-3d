@@ -1,0 +1,55 @@
+name: Export AQP Blender Model
+
+on:
+  push:
+    branches:
+      - aqp-whr-3d-export
+    paths:
+      - '.github/workflows/aqp-export.yml'
+      - 'tools/export_aqp.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout staging branch
+        uses: actions/checkout@v4
+
+      - name: Download source Blender file
+        run: |
+          set -euxo pipefail
+          curl -L --fail --retry 3 \
+            'https://2de52933-6e12-45a0-b913-fa4f7d685acd.sandbox.floot.app/_cdn/static/447716b7-5d70-4324-8015-f58f1c367e39-AQP_WHR_Config3_V1.blend' \
+            -o AQP_WHR_Config3_V1.blend
+          ls -lh AQP_WHR_Config3_V1.blend
+
+      - name: Download Blender 5.2.2
+        run: |
+          set -euxo pipefail
+          curl -L --fail --retry 3 \
+            'https://mirror.blender.org/release/Blender5.2/blender-5.2.2-linux-x64.tar.xz' \
+            -o blender.tar.xz
+          mkdir blender
+          tar -xJf blender.tar.xz -C blender --strip-components=1
+          ./blender/blender --version
+
+      - name: Export GLB
+        run: |
+          set -euxo pipefail
+          mkdir -p exported
+          ./blender/blender -b AQP_WHR_Config3_V1.blend \
+            --python tools/export_aqp.py -- "$PWD/exported"
+          ls -lah exported
+
+      - name: Upload exported web model
+        uses: actions/upload-artifact@v4
+        with:
+          name: AQP-WHR-Config3-Web
+          path: exported/
+          if-no-files-found: error
+          retention-days: 7
